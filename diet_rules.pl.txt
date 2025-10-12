@@ -27,3 +27,4 @@ with open(prolog_file, "w") as f:
     f.write("meal_under_calories(Diet, Type, Meal, MaxCal) :- meal(Diet, Type, Meal, Cal), Cal =< MaxCal.\n")
 
 print(f"Prolog facts and rules saved to {prolog_file}")
+

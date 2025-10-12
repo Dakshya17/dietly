@@ -1,17 +1,19 @@
 import json
+from typing import List, Dict
 
-# Load the meals data from the JSON file
-with open("../meal_data.json", "r") as file:
-    meals_data = json.load(file)
+# Load JSON
+with open("meal_data.json") as f:
+    meal_data = json.load(f)
 
-# Function to get meals for a diet
-def get_meals(diet_name):
-    return meals_data.get(diet_name, [])
+# Function to get meals for a specific diet and meal type
+def get_meals(diet_type: str, meal_type: str) -> List[Dict]:
+    """Return meals for a specific diet and meal type."""
+    if diet_type not in meal_data:
+        return []
+    return [meal for meal in meal_data[diet_type] if meal_type in meal['tags']]
 
-# Example: test it
+# Example usage
 if __name__ == "__main__":
-    diet = "Anti-Inflammatory"  # Change this to test other diets
-    meals = get_meals(diet)
-    print(f"Meals for {diet}:")
-    for m in meals:
-        print("-", m["meal"], "|", m["calories"], "calories |", ", ".join(m["tags"]))
+    protein_breakfasts = get_meals("Protein-Rich", "breakfast")
+    for meal in protein_breakfasts:
+        print(meal)

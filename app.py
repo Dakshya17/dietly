@@ -1,30 +1,22 @@
 from flask import Flask, request, jsonify
-from diet_service import get_meals_by_tag, validate_meal_plan
+from diet_service import get_recommended_meals
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Diet API is running!"
+    return "Diet API running!"
 
-# Get meals by tag or category
-@app.route('/meals', methods=['GET'])
-def meals():
-    tag = request.args.get('tag')  
-    if not tag:
-        return jsonify({"error": "Please provide a tag parameter"}), 400
-    meals_list = get_meals_by_tag(tag)
-    return jsonify({"tag": tag, "meals": meals_list})
-
-# Validate a meal plan
-@app.route('/validate', methods=['POST'])
-def validate():
+@app.route('/recommend', methods=['POST'])
+def recommend():
     data = request.get_json()
-    if not data or "meal_plan" not in data:
-        return jsonify({"error": "Send JSON with 'meal_plan' list"}), 400
-    meal_plan = data["meal_plan"]
-    is_valid, message = validate_meal_plan(meal_plan)
-    return jsonify({"valid": is_valid, "message": message})
+    if not data or "diet_type" not in data or "meal_type" not in data:
+        return jsonify({"error": "Send 'diet_type' and 'meal_type'"}), 400
+    diet_type = data["diet_type"]
+    meal_type = data["meal_type"]
+    user_preferences = data.get("preferences", {})  # e.g., {"goal": "Protein-Rich"}
+    meals = get_recommended_meals(diet_type, meal_type, user_preferences)
+    return jsonify({"recommended_meals": meals})
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

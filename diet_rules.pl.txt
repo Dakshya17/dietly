@@ -1,0 +1,29 @@
+import json
+
+# Load your JSON
+with open("meal_data.json", "r") as f:
+    data = json.load(f)
+
+# Output file for Prolog facts
+prolog_file = "meal_rules.pl"
+
+with open(prolog_file, "w") as f:
+    f.write("% Auto-generated meal facts\n\n")
+    
+    # Iterate over each diet category
+    for diet, meals in data.items():
+        for meal in meals:
+            meal_name = meal["meal"].replace('"', '\\"')  # escape quotes
+            meal_type = meal["tags"][-1]  # assuming last tag is meal type
+            calories = meal["calories"]
+            # Write Prolog fact
+            f.write(f'meal("{diet}", "{meal_type}", "{meal_name}", {calories}).\n')
+    
+    # Optional rules
+    f.write("\n% Rules\n")
+    f.write("meal_by_diet(Diet, Meal) :- meal(Diet, _, Meal, _).\n")
+    f.write("meal_by_type(Type, Meal) :- meal(_, Type, Meal, _).\n")
+    f.write("meal_by_diet_type(Diet, Type, Meal) :- meal(Diet, Type, Meal, _).\n")
+    f.write("meal_under_calories(Diet, Type, Meal, MaxCal) :- meal(Diet, Type, Meal, Cal), Cal =< MaxCal.\n")
+
+print(f"Prolog facts and rules saved to {prolog_file}")

@@ -1,39 +1,38 @@
-import random
 import json
+from typing import List, Dict
+import random
 
 # Load meal data
-with open("meal_data.json", "r") as f:
-    MEALS = json.load(f)
+with open("meal_data.json") as f:
+    meal_data = json.load(f)
 
-def ai_suggest_meals(user_tags=None, meal_type=None, max_calories=None, n=5):
+def recommend_meals(diet_type: str, meal_type: str, max_calories: int = None, top_n: int = 5) -> List[Dict]:
     """
-    Suggest meals based on AI-like logic:
-    - user_tags: list of diet preferences (e.g., ["Protein-Rich", "Vegan"])
-    - meal_type: "breakfast", "lunch", "dinner", "snack", "drink"
-    - max_calories: optional calorie filter
-    - n: number of suggestions
+    Recommend meals for a given diet type and meal type.
+    Optionally filter by max_calories and return top_n meals randomly.
     """
-    suggestions = []
+    if diet_type not in meal_data:
+        return []
+
+    # Filter by meal_type
+    filtered = [meal for meal in meal_data[diet_type] if meal_type in meal['tags']]
+
+    # Filter by max_calories if provided
+    if max_calories is not None:
+        filtered = [meal for meal in filtered if meal['calories'] <= max_calories]
+
+    # Randomly select top_n meals
+    recommended = random.sample(filtered, min(top_n, len(filtered))) if filtered else []
     
-    # Flatten all meals
-    all_meals = []
-    for category, items in MEALS.items():
-        for meal in items:
-            all_meals.append(meal)
-    
-    # Filter by user tags
-    if user_tags:
-        all_meals = [m for m in all_meals if any(tag in m["tags"] for tag in user_tags)]
-    
-    # Filter by meal type
-    if meal_type:
-        all_meals = [m for m in all_meals if meal_type in m["tags"]]
-    
-    # Filter by calories
-    if max_calories:
-        all_meals = [m for m in all_meals if m["calories"] <= max_calories]
-    
-    # Randomly select n meals
-    suggestions = random.sample(all_meals, min(n, len(all_meals)))
-    
-    return suggestions
+    return recommended
+
+# Example usage
+if __name__ == "__main__":
+    diet = "Protein-Rich"
+    meal = "breakfast"
+    calories = 250
+
+    recommended_list = recommend_meals(diet, meal, max_calories=calories)
+    print(f"Recommended {meal} meals for {diet} diet (≤ {calories} cal):")
+    for m in recommended_list:
+        print(f"- {m['meal']} ({m['calories']} cal)")
